@@ -12,56 +12,79 @@ import java.util.NoSuchElementException;
 
 public class ChatRoomClient {
 
+    static Socket socket = null;
+    static BufferedReader inputStream = null;
+    static PrintStream outputStream = null;
+    static BufferedReader inputLine = null;
+
+    String line = null;
+    String lineArray[] = null;
+    String command = null;
+
     public static void main(String[] args) {
+        System.out.println("My chat room client. Version One.");
 
-        Socket socket = null;
-        BufferedReader inputStream = null;
-        PrintStream outputStream = null;
-        BufferedReader inputLine = null;
+        startServer();
 
-        try {
-            socket = new Socket("localhost", 19710);
-            inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            outputStream = new PrintStream(socket.getOutputStream());
-            inputLine = new BufferedReader(new InputStreamReader(System.in));
-        } catch (UnknownHostException uhe) {
-            System.err.println(uhe.getMessage());
-        } catch (SecurityException se) {
-            System.err.println(se.getMessage());
-        } catch (IllegalArgumentException iae) {
-            System.err.println(iae.getMessage());
-        } catch (IOException ioe) {
-            System.err.println(ioe.getMessage());
-        }
+        listen();
 
-        if (socket != null && inputStream != null && outputStream != null && inputLine != null) {
+        cleanUp();
+     }
 
-            System.out.println("Client is up...");
+     public static void startServer() {
 
-            try {
-                String inputString;
-                outputStream.println("1: " + inputLine.readLine());
+         try {
+             socket = new Socket("localhost", 19710);
+             inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             outputStream = new PrintStream(socket.getOutputStream());
+             inputLine = new BufferedReader(new InputStreamReader(System.in));
+         } catch (UnknownHostException uhe) {
+             System.err.println(uhe);
+         } catch (SecurityException se) {
+             System.err.println(se);
+         } catch (IllegalArgumentException iae) {
+             System.err.println(iae);
+         } catch (IOException ioe) {
+             System.err.println(ioe);
+         }
+     }
 
-                while((inputString = inputLine.readLine()) != null) {
-                    System.out.println("2: " + inputString);
-                    outputStream.println("3: " + inputLine.readLine());
-                }
-            } catch (NoSuchElementException nsee) {
-                System.err.println(nsee.getMessage());
-            } catch (IllegalStateException ise) {
-                System.err.println(ise.getMessage());
-            } catch (IOException ioe) {
-                System.err.println(ioe.getMessage());
-            }
+     public static void listen() {
 
-            try {
-                outputStream.close();
-                inputStream.close();
-                inputLine.close();
-                socket.close();
-            } catch (IOException ioe) {
-                System.err.println(ioe.getMessage());
-            }
-        }
-    }
+         if (socket != null && inputStream != null && outputStream != null && inputLine != null) {
+
+             try {
+                 String responseLine;
+
+                 while (true) {
+                     // Prompt
+                     System.out.printf("> ");
+
+                     // Send user input to server
+                     outputStream.println(inputLine.readLine());
+
+                     responseLine = inputStream.readLine();
+                     System.out.println(responseLine);
+                 }
+             } catch (NoSuchElementException nsee) {
+                 System.err.println(nsee);
+             } catch (IllegalStateException ise) {
+                 System.err.println(ise);
+             } catch (IOException ioe) {
+                 System.err.println(ioe);
+             }
+         }
+     }
+
+     public static void cleanUp() {
+
+         try {
+             inputLine.close();
+             outputStream.close();
+             inputStream.close();
+             socket.close();
+         } catch (IOException ioe) {
+             System.err.println(ioe);
+         }
+     }
 }
